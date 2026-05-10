@@ -403,11 +403,21 @@ body {
 .env-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   align-items: center;
+  position: relative;
 }
 
-.env-key-input { width: 210px; flex-shrink: 0; }
+.env-key-input {
+  width: 260px;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.env-key-input:disabled {
+  background: var(--hover-bg);
+  color: var(--text-secondary);
+  cursor: default;
+}
 .env-value-input { flex: 1; min-width: 0; }
 
 .env-row input {

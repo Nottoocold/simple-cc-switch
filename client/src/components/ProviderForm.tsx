@@ -9,27 +9,26 @@ interface EnvEntry {
 }
 
 interface Props {
-  provider: Provider | null; // null = creating new
+  provider: Provider | null;
   onSave: (p: Provider) => void;
   onCancel: () => void;
 }
 
-const DEFAULT_ENV_ENTRIES: { key: string; value: string }[] = [
-  { key: 'ANTHROPIC_BASE_URL', value: '' },
-  { key: 'ANTHROPIC_AUTH_TOKEN', value: '' },
-  { key: 'ANTHROPIC_MODEL', value: '' },
-  { key: 'ANTHROPIC_DEFAULT_HAIKU_MODEL', value: '' },
-  { key: 'ANTHROPIC_DEFAULT_SONNET_MODEL', value: '' },
-  { key: 'ANTHROPIC_DEFAULT_OPUS_MODEL', value: '' },
+const ENV_KEYS = [
+  'ANTHROPIC_BASE_URL',
+  'ANTHROPIC_AUTH_TOKEN',
+  'ANTHROPIC_MODEL',
+  'ANTHROPIC_DEFAULT_HAIKU_MODEL',
+  'ANTHROPIC_DEFAULT_SONNET_MODEL',
+  'ANTHROPIC_DEFAULT_OPUS_MODEL',
 ];
 
-const REQUIRED_KEYS = new Set(['ANTHROPIC_BASE_URL', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_MODEL']);
-
 function buildInitial(provider: Provider | null): EnvEntry[] {
-  if (provider) {
-    return Object.entries(provider.env).map(([k, v]) => ({ id: crypto.randomUUID(), key: k, value: v }));
-  }
-  return DEFAULT_ENV_ENTRIES.map(e => ({ id: crypto.randomUUID(), ...e }));
+  return ENV_KEYS.map(key => ({
+    id: crypto.randomUUID(),
+    key,
+    value: provider?.env?.[key] ?? '',
+  }));
 }
 
 export default function ProviderForm({ provider, onSave, onCancel }: Props) {
@@ -38,10 +37,8 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
   const [envEntries, setEnvEntries] = useState(buildInitial(provider));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleAddEnv = () => setEnvEntries([...envEntries, { id: crypto.randomUUID(), key: '', value: '' }]);
-
-  const handleEnvChange = (entryId: string, field: 'key' | 'value', val: string) => {
-    setEnvEntries(prev => prev.map(e => e.id === entryId ? { ...e, [field]: val } : e));
+  const handleEnvChange = (entryId: string, value: string) => {
+    setEnvEntries(prev => prev.map(e => e.id === entryId ? { ...e, value } : e));
     setErrors(prev => {
       const next = { ...prev };
       delete next[entryId];
@@ -49,21 +46,15 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
     });
   };
 
-  const handleEnvRemove = (entryId: string) => {
-    const entry = envEntries.find(e => e.id === entryId);
-    if (!entry || REQUIRED_KEYS.has(entry.key)) return;
-    setEnvEntries(envEntries.filter(e => e.id !== entryId));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    if (!id.trim()) newErrors['_id'] = '标识不能为空';
-    if (!name.trim()) newErrors['_name'] = '名称不能为空';
+    if (!id.trim()) newErrors._id = '标识不能为空';
+    if (!name.trim()) newErrors._name = '名称不能为空';
 
     for (const entry of envEntries) {
-      if (REQUIRED_KEYS.has(entry.key) && !entry.value.trim()) {
+      if (!entry.value.trim()) {
         newErrors[entry.id] = '此项为必填';
       }
     }
@@ -74,7 +65,9 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
     }
 
     const env: Record<string, string> = {};
-    envEntries.forEach(({ key, value }) => { if (key.trim()) env[key.trim()] = value; });
+    for (const entry of envEntries) {
+      env[entry.key] = entry.value;
+    }
     onSave({ id: id.trim(), name: name.trim(), env });
   };
 
@@ -100,38 +93,22 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
             环境变量 (env)
           </label>
           <div className="env-entries">
-            {envEntries.map((entry) => {
-              const isRequired = REQUIRED_KEYS.has(entry.key);
-              return (
-                <div key={entry.id} className="env-row">
-                  <input
-                    placeholder="KEY"
-                    value={entry.key}
-                    onChange={e => handleEnvChange(entry.id, 'key', e.target.value)}
-                    className="env-key-input"
-                    disabled={!!provider && Object.keys(provider.env).includes(entry.key)}
-                  />
-                  <input
-                    placeholder={isRequired ? '必填' : 'VALUE'}
-                    value={entry.value}
-                    onChange={e => handleEnvChange(entry.id, 'value', e.target.value)}
-                    className={`env-value-input${errors[entry.id] ? ' input-error' : ''}`}
-                  />
-                  <button
-                    type="button"
-                    className={`icon-btn danger${isRequired ? ' icon-btn-disabled' : ''}`}
-                    onClick={() => handleEnvRemove(entry.id)}
-                    disabled={isRequired}
-                    title={isRequired ? '必填项不可删除' : '删除'}
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              );
-            })}
+            {envEntries.map((entry) => (
+              <div key={entry.id} className="env-row">
+                <input
+                  value={entry.key}
+                  disabled
+                  className="env-key-input"
+                />
+                <input
+                  placeholder="必填"
+                  value={entry.value}
+                  onChange={e => handleEnvChange(entry.id, e.target.value)}
+                  className={`env-value-input${errors[entry.id] ? ' input-error' : ''}`}
+                />
+              </div>
+            ))}
           </div>
-          {errors._env && <p className="field-error">{errors._env}</p>}
-          <button type="button" className="add-env-btn" onClick={handleAddEnv}>+ 添加环境变量</button>
           <div className="modal-actions">
             <button type="button" className="btn" onClick={onCancel}>取消</button>
             <button type="submit" className="btn primary">保存</button>
