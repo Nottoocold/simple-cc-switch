@@ -20,6 +20,7 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
   const [showCommonModal, setShowCommonModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast, showToast } = useToast();
   const { theme, toggle: toggleTheme } = useTheme();
@@ -86,8 +87,19 @@ export default function App() {
     }
   };
 
-  const handleDeleteProvider = async (id: string) => {
-    if (!presets) return;
+  const handleDeleteRequest = (id: string) => {
+    const p = presets?.providers?.find(pr => pr.id === id);
+    if (!p) return;
+    if (id === currentProviderId) {
+      showToast('无法删除正在使用的提供商', 'error');
+      return;
+    }
+    setDeleteTarget(p);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!presets || !deleteTarget) return;
+    const id = deleteTarget.id;
     const updated = { ...presets, providers: presets.providers.filter(p => p.id !== id) };
     await savePresets(updated);
     setPresets(updated);
@@ -95,9 +107,7 @@ export default function App() {
       setActiveProvider(null);
       setMergedConfig({});
     }
-    if (currentProviderId === id) {
-      setCurrentProviderId(null);
-    }
+    setDeleteTarget(null);
   };
 
   const handleEditProvider = (provider: Provider) => {
@@ -143,7 +153,7 @@ export default function App() {
           currentId={currentProviderId}
           onSelect={handleSelect}
           onEdit={handleEditProvider}
-          onDelete={handleDeleteProvider}
+          onDelete={handleDeleteRequest}
         />
         <button className="add-provider-btn" onClick={() => { setEditingProvider(null); setShowForm(true); }}>
           + 新增提供商
@@ -195,6 +205,18 @@ export default function App() {
           onExtract={handleExtractCommonConfig}
           theme={theme}
         />
+      )}
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="modal modal-confirm" onClick={e => e.stopPropagation()}>
+            <h3>确认删除</h3>
+            <p>确定要删除提供商 <strong>{deleteTarget.name}</strong> 吗？此操作无法撤销。</p>
+            <div className="modal-actions" style={{ marginTop: 20 }}>
+              <button className="btn" onClick={() => setDeleteTarget(null)}>取消</button>
+              <button className="btn danger" onClick={handleDeleteConfirm}>确认</button>
+            </div>
+          </div>
+        </div>
       )}
       {toast && <div className={`toast ${toast.type}`}>{toast.message}</div>}
     </div>

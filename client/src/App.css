@@ -288,6 +288,16 @@ body {
   border-color: var(--primary-hover);
 }
 
+.btn.danger {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+.btn.danger:hover {
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
 .editor-container {
   flex: 1;
   min-height: 0;
@@ -421,6 +431,15 @@ body {
 .provider-form-modal { width: 640px; }
 
 .modal-wide { width: 680px; }
+
+.modal-confirm {
+  width: 400px;
+}
+.modal-confirm p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
 
 .modal-desc {
   font-size: 12px;
