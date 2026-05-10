@@ -30,8 +30,14 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract 
   const handleExtract = async () => {
     setExtracting(true);
     try {
-      const data = await onExtract();
-      setText(JSON.stringify(data, null, 2));
+      const current = JSON.parse(text);
+      const extracted = await onExtract();
+      const merged = { ...current, ...extracted };
+      // deep-merge env fields separately
+      if (current.env && typeof current.env === 'object' && extracted.env && typeof extracted.env === 'object') {
+        merged.env = { ...current.env as Record<string, unknown>, ...extracted.env as Record<string, unknown> };
+      }
+      setText(JSON.stringify(merged, null, 2));
       setError(null);
     } catch {
       setError('提取失败，请确认 ~/.claude/settings.json 存在');
