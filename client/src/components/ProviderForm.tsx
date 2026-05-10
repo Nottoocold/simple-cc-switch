@@ -96,7 +96,7 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
             <input value={name} onChange={e => { setName(e.target.value); setErrors(p => { const n = { ...p }; delete n._name; return n; }); }} placeholder="如: DeepSeek" />
             {errors._name && <p className="field-error">{errors._name}</p>}
           </div>
-          <label className="form-group" style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4 }}>
+          <label className="form-group" style={{ display: 'block', marginBottom: 6 }}>
             环境变量 (env)
           </label>
           <div className="env-entries">

@@ -50,16 +50,16 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract,
 
   return (
     <div className="modal-overlay">
-      <div className="modal" style={{ width: 640 }} onClick={e => e.stopPropagation()}>
+      <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>编辑通用配置</h3>
           <button type="button" className="modal-close" onClick={onCancel}><X size={18} /></button>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
+        <p className="modal-desc">
           勾选「合并通用配置」时，此处的配置将与当前提供商的配置合并。<br />
           env 字段会与提供商的 env 深度合并（通用配置作为基础，提供商同名 key 优先）。
         </p>
-        <div style={{ height: 360, border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden', marginBottom: 12 }}>
+        <div className="modal-editor">
           <Editor
             defaultLanguage="json"
             value={text}
@@ -74,7 +74,7 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract,
             }}
           />
         </div>
-        {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 8 }}>JSON 解析错误: {error}</p>}
+        {error && <p className="field-error" style={{ marginBottom: 8 }}>JSON 解析错误: {error}</p>}
         <div className="modal-actions">
           <button className="btn" onClick={handleExtract} disabled={extracting}>
             {extracting ? '提取中...' : '提取通用配置'}
