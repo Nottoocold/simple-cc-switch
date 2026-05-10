@@ -1,0 +1,19 @@
+{
+  "name": "cc-switch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev:server": "node server.js",
+    "dev:client": "npm --prefix client run dev",
+    "dev": "node server.js & npm --prefix client run dev & wait",
+    "build": "npm --prefix client run build",
+    "start": "npm run build && NODE_ENV=production node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
