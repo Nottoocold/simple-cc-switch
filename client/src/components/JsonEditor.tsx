@@ -1,5 +1,4 @@
-import { useRef, useCallback } from 'react';
-import Editor, { type OnMount } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 
 interface Props {
   value: Record<string, unknown>;
@@ -7,27 +6,15 @@ interface Props {
 }
 
 export default function JsonEditor({ value, onChange }: Props) {
-  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
-  const isUpdatingRef = useRef(false);
-
-  const handleMount: OnMount = useCallback((editor) => {
-    editorRef.current = editor;
-  }, []);
-
-  const handleChange = useCallback((raw: string | undefined) => {
-    if (!raw || isUpdatingRef.current) return;
+  const handleChange = (raw: string | undefined) => {
+    if (!raw) return;
     try {
       const parsed = JSON.parse(raw);
       onChange(parsed);
     } catch {
       // user is mid-edit, ignore parse errors
     }
-  }, [onChange]);
-
-  const handleFormat = useCallback(() => {
-    if (!editorRef.current) return;
-    editorRef.current.getAction('editor.action.formatDocument')?.run();
-  }, []);
+  };
 
   return (
     <Editor
@@ -35,7 +22,6 @@ export default function JsonEditor({ value, onChange }: Props) {
       defaultLanguage="json"
       value={JSON.stringify(value, null, 2)}
       onChange={handleChange}
-      onMount={handleMount}
       theme="vs-light"
       options={{
         minimap: { enabled: false },

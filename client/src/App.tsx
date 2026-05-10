@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { Provider, Presets } from './types';
-import { fetchPresets, savePresets, saveSettings, fetchGlobalSettings, fetchConfig, type ServerConfig } from './api';
+import { fetchPresets, savePresets, saveSettings, fetchGlobalSettings, fetchConfig } from './api';
+import { mergeProviderConfig, filterAnthropicEnv } from './utils';
+import { useToast } from './hooks/useToast';
 import ProviderList from './components/ProviderList';
 import ProviderForm from './components/ProviderForm';
 import JsonEditor from './components/JsonEditor';
@@ -15,36 +17,30 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
   const [showCommonModal, setShowCommonModal] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
-    fetchPresets().then(setPresets);
-    fetchConfig().then(c => setSettingsFile(c.settingsFile));
+    Promise.all([fetchPresets(), fetchConfig()]).then(([p, c]) => {
+      setPresets(p);
+      setSettingsFile(c.settingsFile);
+      setLoading(false);
+    });
   }, []);
 
-  const doMerge = useCallback((provider: Provider | null, common: Record<string, unknown> | undefined, merge: boolean) => {
-    if (!provider) { setMergedConfig({}); return; }
-    const config: Record<string, unknown> = { env: { ...provider.env } };
-    if (merge && common) {
-      const commonCopy = JSON.parse(JSON.stringify(common)) as Record<string, unknown>;
-      const commonEnv = (commonCopy.env as Record<string, unknown>) ?? {};
-      delete commonCopy.env;
-      Object.assign(config, commonCopy);
-      // common env as base, provider env overrides same keys
-      config.env = { ...commonEnv, ...provider.env };
-    }
-    setMergedConfig(config);
-  }, []);
+  const recompute = (provider: Provider | null, common: Record<string, unknown> | undefined, merge: boolean) => {
+    setMergedConfig(mergeProviderConfig(provider, common, merge));
+  };
 
-  const handleSelect = useCallback((p: Provider) => {
+  const handleSelect = (p: Provider) => {
     setActiveProvider(p);
-    doMerge(p, presets?.commonConfig, mergeCommon);
-  }, [presets, mergeCommon, doMerge]);
+    recompute(p, presets?.commonConfig, mergeCommon);
+  };
 
-  const handleToggleMerge = useCallback((checked: boolean) => {
+  const handleToggleMerge = (checked: boolean) => {
     setMergeCommon(checked);
-    doMerge(activeProvider, presets?.commonConfig, checked);
-  }, [activeProvider, presets, doMerge]);
+    recompute(activeProvider, presets?.commonConfig, checked);
+  };
 
   const handleSaveSettings = async () => {
     try {
@@ -70,7 +66,7 @@ export default function App() {
     setEditingProvider(null);
     if (!activeProvider || activeProvider.id === provider.id) {
       setActiveProvider(provider);
-      doMerge(provider, updated.commonConfig, mergeCommon);
+      recompute(provider, updated.commonConfig, mergeCommon);
     }
   };
 
@@ -97,29 +93,19 @@ export default function App() {
     setPresets(updated);
     setShowCommonModal(false);
     if (activeProvider) {
-      doMerge(activeProvider, config, mergeCommon);
+      recompute(activeProvider, config, mergeCommon);
     }
     showToast('通用配置已保存', 'success');
   };
 
   const handleExtractCommonConfig = async (): Promise<Record<string, unknown>> => {
     const settings = await fetchGlobalSettings();
-    if (settings.env && typeof settings.env === 'object') {
-      const filteredEnv: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(settings.env as Record<string, unknown>)) {
-        if (!k.startsWith('ANTHROPIC')) {
-          filteredEnv[k] = v;
-        }
-      }
-      settings.env = filteredEnv;
-    }
-    return settings;
+    return filterAnthropicEnv(settings);
   };
 
-  const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 2500);
-  };
+  if (loading) {
+    return <div className="app"><div className="loading">加载中...</div></div>;
+  }
 
   return (
     <div className="app">
@@ -137,7 +123,7 @@ export default function App() {
         </button>
         <div className="sidebar-footer">
           <div className="sidebar-header">通用配置</div>
-          <button className="btn" style={{ margin: 8, width: 'calc(100% - 16px)' }} onClick={() => setShowCommonModal(true)}>
+          <button className="btn sidebar-btn" onClick={() => setShowCommonModal(true)}>
             编辑通用配置
           </button>
         </div>
@@ -156,7 +142,7 @@ export default function App() {
           <button className="btn primary" onClick={handleSaveSettings}>
             保存配置
           </button>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+          <span className="toolbar-path">
             → {settingsFile || '...'}
           </span>
         </div>

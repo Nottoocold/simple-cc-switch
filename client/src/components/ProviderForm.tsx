@@ -1,34 +1,43 @@
 import { useState } from 'react';
 import type { Provider } from '../types';
 
+interface EnvEntry {
+  id: string;
+  key: string;
+  value: string;
+}
+
 interface Props {
   provider: Provider | null; // null = creating new
   onSave: (p: Provider) => void;
   onCancel: () => void;
 }
 
+function buildInitial(provider: Provider | null): EnvEntry[] {
+  if (provider) {
+    return Object.entries(provider.env).map(([k, v]) => ({ id: crypto.randomUUID(), key: k, value: v }));
+  }
+  return [{ id: crypto.randomUUID(), key: '', value: '' }];
+}
+
 export default function ProviderForm({ provider, onSave, onCancel }: Props) {
   const [id, setId] = useState(provider?.id ?? '');
   const [name, setName] = useState(provider?.name ?? '');
-  const [envEntries, setEnvEntries] = useState<[string, string][]>(
-    provider ? Object.entries(provider.env) : [['', '']]
-  );
+  const [envEntries, setEnvEntries] = useState(buildInitial(provider));
 
-  const handleAddEnv = () => setEnvEntries([...envEntries, ['', '']]);
-  const handleEnvChange = (i: number, key: string, value: string) => {
-    const next = [...envEntries];
-    next[i] = [key, value];
-    setEnvEntries(next);
+  const handleAddEnv = () => setEnvEntries([...envEntries, { id: crypto.randomUUID(), key: '', value: '' }]);
+  const handleEnvChange = (id: string, field: 'key' | 'value', val: string) => {
+    setEnvEntries(envEntries.map(e => e.id === id ? { ...e, [field]: val } : e));
   };
-  const handleEnvRemove = (i: number) => {
+  const handleEnvRemove = (id: string) => {
     if (envEntries.length <= 1) return;
-    setEnvEntries(envEntries.filter((_, idx) => idx !== i));
+    setEnvEntries(envEntries.filter(e => e.id !== id));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const env: Record<string, string> = {};
-    envEntries.forEach(([k, v]) => { if (k.trim()) env[k.trim()] = v; });
+    envEntries.forEach(({ key, value }) => { if (key.trim()) env[key.trim()] = value; });
     onSave({ id: id.trim(), name: name.trim(), env });
   };
 
@@ -49,21 +58,21 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
             环境变量 (env)
           </label>
           <div className="env-entries">
-            {envEntries.map(([key, value], i) => (
-              <div key={i} className="env-row">
+            {envEntries.map((entry) => (
+              <div key={entry.id} className="env-row">
                 <input
                   placeholder="KEY"
-                  value={key}
-                  onChange={e => handleEnvChange(i, e.target.value, value)}
+                  value={entry.key}
+                  onChange={e => handleEnvChange(entry.id, 'key', e.target.value)}
                   style={{ flex: 1 }}
                 />
                 <input
                   placeholder="VALUE"
-                  value={value}
-                  onChange={e => handleEnvChange(i, key, e.target.value)}
+                  value={entry.value}
+                  onChange={e => handleEnvChange(entry.id, 'value', e.target.value)}
                   style={{ flex: 2 }}
                 />
-                <button type="button" className="icon-btn danger" onClick={() => handleEnvRemove(i)}>✕</button>
+                <button type="button" className="icon-btn danger" onClick={() => handleEnvRemove(entry.id)}>✕</button>
               </div>
             ))}
           </div>

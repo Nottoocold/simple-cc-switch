@@ -233,6 +233,27 @@ body {
   flex-shrink: 0;
 }
 
+.sidebar-btn {
+  margin: 8px;
+  width: calc(100% - 16px);
+}
+
+.toolbar-path {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 /* Empty state */
 .empty-state {
   display: flex;
@@ -241,6 +262,11 @@ body {
   height: 100%;
   color: var(--text-secondary);
   font-size: 14px;
+}
+
+/* Modal actions spacer */
+.modal-actions .spacer {
+  flex: 1;
 }
 
 /* Toast */

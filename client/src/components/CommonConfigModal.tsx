@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Editor, { type OnMount } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 
 interface Props {
   config: Record<string, unknown>;
@@ -46,10 +46,6 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract 
     }
   };
 
-  const handleFormat = (editor: Parameters<OnMount>[0]) => {
-    editor.getAction('editor.action.formatDocument')?.run();
-  };
-
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal" style={{ width: 640 }} onClick={e => e.stopPropagation()}>
@@ -63,10 +59,6 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract 
             defaultLanguage="json"
             value={text}
             onChange={(v) => { setText(v ?? ''); setError(null); }}
-            onMount={(editor) => {
-              // save reference for format button
-              (editor as any).__format = () => handleFormat(editor);
-            }}
             theme="vs-light"
             options={{
               minimap: { enabled: false },
