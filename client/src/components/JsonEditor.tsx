@@ -3,9 +3,10 @@ import Editor from '@monaco-editor/react';
 interface Props {
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
+  theme: 'light' | 'dark';
 }
 
-export default function JsonEditor({ value, onChange }: Props) {
+export default function JsonEditor({ value, onChange, theme }: Props) {
   const handleChange = (raw: string | undefined) => {
     if (!raw) return;
     try {
@@ -22,7 +23,7 @@ export default function JsonEditor({ value, onChange }: Props) {
       defaultLanguage="json"
       value={JSON.stringify(value, null, 2)}
       onChange={handleChange}
-      theme="vs-light"
+      theme={theme === 'light' ? 'vs' : 'vs-dark'}
       options={{
         minimap: { enabled: false },
         fontSize: 13,

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import type { Provider, Presets } from './types';
 import { fetchPresets, savePresets, saveSettings, fetchGlobalSettings, fetchConfig } from './api';
 import { mergeProviderConfig, filterAnthropicEnv } from './utils';
 import { useToast } from './hooks/useToast';
+import { useTheme } from './hooks/useTheme';
 import ProviderList from './components/ProviderList';
 import ProviderForm from './components/ProviderForm';
 import JsonEditor from './components/JsonEditor';
@@ -19,6 +21,7 @@ export default function App() {
   const [showCommonModal, setShowCommonModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast, showToast } = useToast();
+  const { theme, toggle: toggleTheme } = useTheme();
 
   useEffect(() => {
     Promise.all([fetchPresets(), fetchConfig()]).then(([p, c]) => {
@@ -138,6 +141,9 @@ export default function App() {
             />
             合并通用配置
           </label>
+          <button className="btn theme-btn" onClick={toggleTheme} title="切换主题">
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
           <span className="spacer" />
           <button className="btn primary" onClick={handleSaveSettings}>
             保存配置
@@ -147,7 +153,7 @@ export default function App() {
           </span>
         </div>
         <div className="editor-container">
-          <JsonEditor value={mergedConfig} onChange={setMergedConfig} />
+          <JsonEditor value={mergedConfig} onChange={setMergedConfig} theme={theme} />
         </div>
       </div>
       {showForm && (
@@ -163,6 +169,7 @@ export default function App() {
           onSave={handleSaveCommonConfig}
           onCancel={() => setShowCommonModal(false)}
           onExtract={handleExtractCommonConfig}
+          theme={theme}
         />
       )}
       {toast && <div className={`toast ${toast.type}`}>{toast.message}</div>}

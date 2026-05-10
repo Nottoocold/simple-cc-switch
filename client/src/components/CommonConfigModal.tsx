@@ -7,9 +7,10 @@ interface Props {
   onSave: (config: Record<string, unknown>) => void;
   onCancel: () => void;
   onExtract: () => Promise<Record<string, unknown>>;
+  theme: 'light' | 'dark';
 }
 
-export default function CommonConfigModal({ config, onSave, onCancel, onExtract }: Props) {
+export default function CommonConfigModal({ config, onSave, onCancel, onExtract, theme }: Props) {
   const [text, setText] = useState(() => JSON.stringify(config, null, 2));
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +64,7 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract 
             defaultLanguage="json"
             value={text}
             onChange={(v) => { setText(v ?? ''); setError(null); }}
-            theme="vs-light"
+            theme={theme === 'light' ? 'vs' : 'vs-dark'}
             options={{
               minimap: { enabled: false },
               fontSize: 13,
