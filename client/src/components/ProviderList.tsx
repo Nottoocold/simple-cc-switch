@@ -1,3 +1,4 @@
+import { Pencil, Trash2 } from 'lucide-react';
 import type { Provider } from '../types';
 
 interface Props {
@@ -23,8 +24,8 @@ export default function ProviderList({ providers, activeId, onSelect, onEdit, on
         >
           <span className="name">{p.name}</span>
           <span className="actions">
-            <button className="icon-btn" onClick={e => { e.stopPropagation(); onEdit(p); }} title="编辑">✏️</button>
-            <button className="icon-btn danger" onClick={e => { e.stopPropagation(); onDelete(p.id); }} title="删除">🗑</button>
+            <button className="icon-btn" onClick={e => { e.stopPropagation(); onEdit(p); }} title="编辑"><Pencil size={14} /></button>
+            <button className="icon-btn danger" onClick={e => { e.stopPropagation(); onDelete(p.id); }} title="删除"><Trash2 size={14} /></button>
           </span>
         </div>
       ))}

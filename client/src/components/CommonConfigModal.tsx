@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 
 interface Props {
@@ -51,7 +52,7 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract 
       <div className="modal" style={{ width: 640 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>编辑通用配置</h3>
-          <button type="button" className="modal-close" onClick={onCancel}>✕</button>
+          <button type="button" className="modal-close" onClick={onCancel}><X size={18} /></button>
         </div>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
           勾选「合并通用配置」时，此处的配置将与当前提供商的配置合并。<br />

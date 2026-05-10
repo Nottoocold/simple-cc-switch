@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import type { Provider } from '../types';
 
 interface EnvEntry {
@@ -82,7 +83,7 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
       <div className="modal provider-form-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{provider ? '编辑提供商' : '新增提供商'}</h3>
-          <button type="button" className="modal-close" onClick={onCancel}>✕</button>
+          <button type="button" className="modal-close" onClick={onCancel}><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
@@ -123,7 +124,7 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
                     disabled={isRequired}
                     title={isRequired ? '必填项不可删除' : '删除'}
                   >
-                    ✕
+                    <X size={14} />
                   </button>
                 </div>
               );
