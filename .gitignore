@@ -10,3 +10,6 @@ cc-switch-presets.json
 
 # Claude Code
 .claude/settings.local.json
+
+# Runtime logs
+logs/

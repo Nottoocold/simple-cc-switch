@@ -9,14 +9,25 @@ A web GUI tool for managing Claude Code's `~/.claude/settings.json`. It allows c
 ## Commands
 
 ```bash
+# Development
 npm run dev          # Start backend (:3456) + frontend (:5173) in parallel
 npm run dev:server   # Express backend only
 npm run dev:client   # Vite dev server only (HMR, proxies /api → :3456)
 npm run build        # TypeScript check + Vite production build
+
+# Production (foreground, occupies terminal)
 npm start            # Build client, then serve from Express on :3456
+
+# Production (daemon via pm2, recommended)
+npm run start:daemon # Build + start as background daemon
+npm run stop         # Stop daemon
+npm run restart      # Restart daemon
+npm run logs         # View daemon logs
+npm run status       # View daemon status
 ```
 
 `npm install` in root for Express; `npm --prefix client install` for the React/Vite frontend.
+Production daemon requires pm2 globally: `npm install -g pm2`.
 
 ## Architecture
 

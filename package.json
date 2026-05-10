@@ -8,7 +8,12 @@
     "dev:client": "npm --prefix client run dev",
     "dev": "node server.js & npm --prefix client run dev & wait",
     "build": "npm --prefix client run build",
-    "start": "npm run build && NODE_ENV=production node server.js"
+    "start": "npm run build && NODE_ENV=production node server.js",
+    "start:daemon": "npm run build && pm2 start ecosystem.config.cjs",
+    "stop": "pm2 stop cc-switch",
+    "restart": "pm2 restart cc-switch",
+    "logs": "pm2 logs cc-switch",
+    "status": "pm2 status"
   },
   "keywords": [],
   "author": "",
