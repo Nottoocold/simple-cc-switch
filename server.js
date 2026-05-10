@@ -54,6 +54,16 @@ app.put("/api/presets", (req, res) => {
   res.json({ ok: true });
 });
 
+// Global settings — always reads ~/.claude/settings.json
+app.get("/api/settings/global", (req, res) => {
+  const globalFile = path.join(os.homedir(), ".claude", "settings.json");
+  const settings = readJSON(globalFile);
+  if (!settings) {
+    return res.status(404).json({ error: "Global settings.json not found" });
+  }
+  res.json(settings);
+});
+
 // Settings endpoints
 app.get("/api/settings", (req, res) => {
   const settings = readJSON(SETTINGS_FILE);

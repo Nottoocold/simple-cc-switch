@@ -24,6 +24,14 @@ export async function savePresets(presets: Presets): Promise<void> {
   });
 }
 
+export async function fetchGlobalSettings(): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/settings/global`);
+  if (!res.ok) {
+    throw new Error('Failed to load global settings.json');
+  }
+  return res.json();
+}
+
 export async function fetchSettings(): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE}/settings`);
   if (!res.ok) {

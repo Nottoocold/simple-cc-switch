@@ -5,9 +5,10 @@ interface Props {
   config: Record<string, unknown>;
   onSave: (config: Record<string, unknown>) => void;
   onCancel: () => void;
+  onExtract: () => Promise<Record<string, unknown>>;
 }
 
-export default function CommonConfigModal({ config, onSave, onCancel }: Props) {
+export default function CommonConfigModal({ config, onSave, onCancel, onExtract }: Props) {
   const [text, setText] = useState(() => JSON.stringify(config, null, 2));
   const [error, setError] = useState<string | null>(null);
 
@@ -21,6 +22,21 @@ export default function CommonConfigModal({ config, onSave, onCancel }: Props) {
       onSave(parsed);
     } catch (e: unknown) {
       setError((e as Error).message);
+    }
+  };
+
+  const [extracting, setExtracting] = useState(false);
+
+  const handleExtract = async () => {
+    setExtracting(true);
+    try {
+      const data = await onExtract();
+      setText(JSON.stringify(data, null, 2));
+      setError(null);
+    } catch {
+      setError('提取失败，请确认 ~/.claude/settings.json 存在');
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -57,6 +73,10 @@ export default function CommonConfigModal({ config, onSave, onCancel }: Props) {
         </div>
         {error && <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 8 }}>JSON 解析错误: {error}</p>}
         <div className="modal-actions">
+          <button className="btn" onClick={handleExtract} disabled={extracting}>
+            {extracting ? '提取中...' : '提取通用配置'}
+          </button>
+          <span className="spacer" />
           <button className="btn" onClick={onCancel}>取消</button>
           <button className="btn primary" onClick={handleSave}>保存</button>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Provider, Presets } from './types';
-import { fetchPresets, savePresets, saveSettings, fetchConfig, type ServerConfig } from './api';
+import { fetchPresets, savePresets, saveSettings, fetchGlobalSettings, fetchConfig, type ServerConfig } from './api';
 import ProviderList from './components/ProviderList';
 import ProviderForm from './components/ProviderForm';
 import JsonEditor from './components/JsonEditor';
@@ -102,6 +102,20 @@ export default function App() {
     showToast('通用配置已保存', 'success');
   };
 
+  const handleExtractCommonConfig = async (): Promise<Record<string, unknown>> => {
+    const settings = await fetchGlobalSettings();
+    if (settings.env && typeof settings.env === 'object') {
+      const filteredEnv: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(settings.env as Record<string, unknown>)) {
+        if (!k.startsWith('ANTHROPIC')) {
+          filteredEnv[k] = v;
+        }
+      }
+      settings.env = filteredEnv;
+    }
+    return settings;
+  };
+
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 2500);
@@ -162,6 +176,7 @@ export default function App() {
           config={presets?.commonConfig ?? {}}
           onSave={handleSaveCommonConfig}
           onCancel={() => setShowCommonModal(false)}
+          onExtract={handleExtractCommonConfig}
         />
       )}
       {toast && <div className={`toast ${toast.type}`}>{toast.message}</div>}
