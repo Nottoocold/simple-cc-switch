@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import type { Provider, Presets } from './types';
 import { fetchPresets, savePresets, saveSettings, fetchGlobalSettings, fetchConfig } from './api';
-import { mergeProviderConfig, filterAnthropicEnv } from './utils';
+import { mergeProviderConfig, filterAnthropicEnv, detectCurrentProvider } from './utils';
 import { useToast } from './hooks/useToast';
 import { useTheme } from './hooks/useTheme';
 import ProviderList from './components/ProviderList';
@@ -13,6 +13,7 @@ import CommonConfigModal from './components/CommonConfigModal';
 export default function App() {
   const [presets, setPresets] = useState<Presets | null>(null);
   const [activeProvider, setActiveProvider] = useState<Provider | null>(null);
+  const [currentProviderId, setCurrentProviderId] = useState<string | null>(null);
   const [mergedConfig, setMergedConfig] = useState<Record<string, unknown>>({});
   const [settingsFile, setSettingsFile] = useState<string>('');
   const [mergeCommon, setMergeCommon] = useState(true);
@@ -28,6 +29,15 @@ export default function App() {
       setPresets(p);
       setSettingsFile(c.settingsFile);
       setLoading(false);
+      // Try to detect current provider from global settings
+      fetchGlobalSettings().then(settings => {
+        const detected = detectCurrentProvider(p.providers, settings.env as Record<string, unknown> | undefined);
+        if (detected) {
+          setCurrentProviderId(detected.id);
+          setActiveProvider(detected);
+          setMergedConfig(mergeProviderConfig(detected, p.commonConfig, mergeCommon));
+        }
+      }).catch(() => { /* global settings not accessible */ });
     });
   }, []);
 
@@ -48,6 +58,9 @@ export default function App() {
   const handleSaveSettings = async () => {
     try {
       await saveSettings(mergedConfig);
+      if (activeProvider) {
+        setCurrentProviderId(activeProvider.id);
+      }
       showToast(`已保存到 ${settingsFile}`, 'success');
     } catch {
       showToast('Failed to save settings', 'error');
@@ -82,6 +95,9 @@ export default function App() {
       setActiveProvider(null);
       setMergedConfig({});
     }
+    if (currentProviderId === id) {
+      setCurrentProviderId(null);
+    }
   };
 
   const handleEditProvider = (provider: Provider) => {
@@ -106,6 +122,8 @@ export default function App() {
     return filterAnthropicEnv(settings);
   };
 
+  const currentProvider = presets?.providers?.find(p => p.id === currentProviderId) ?? null;
+
   if (loading) {
     return <div className="app"><div className="loading">加载中...</div></div>;
   }
@@ -113,10 +131,16 @@ export default function App() {
   return (
     <div className="app">
       <div className="sidebar">
-        <div className="sidebar-header">Provider 提供商</div>
+        <div className="sidebar-header">
+          Provider 提供商
+          {currentProvider && (
+            <span className="sidebar-header-current">当前: {currentProvider.name}</span>
+          )}
+        </div>
         <ProviderList
           providers={presets?.providers ?? []}
           activeId={activeProvider?.id ?? null}
+          currentId={currentProviderId}
           onSelect={handleSelect}
           onEdit={handleEditProvider}
           onDelete={handleDeleteProvider}
