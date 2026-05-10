@@ -9,6 +9,7 @@ import ProviderList from './components/ProviderList';
 import ProviderForm from './components/ProviderForm';
 import JsonEditor from './components/JsonEditor';
 import CommonConfigModal from './components/CommonConfigModal';
+import ConfirmDialog from './components/ConfirmDialog';
 
 export default function App() {
   const [presets, setPresets] = useState<Presets | null>(null);
@@ -207,16 +208,13 @@ export default function App() {
         />
       )}
       {deleteTarget && (
-        <div className="modal-overlay" onClick={() => setDeleteTarget(null)}>
-          <div className="modal modal-confirm" onClick={e => e.stopPropagation()}>
-            <h3>确认删除</h3>
-            <p>确定要删除提供商 <strong>{deleteTarget.name}</strong> 吗？此操作无法撤销。</p>
-            <div className="modal-actions" style={{ marginTop: 20 }}>
-              <button className="btn" onClick={() => setDeleteTarget(null)}>取消</button>
-              <button className="btn danger" onClick={handleDeleteConfirm}>确认</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="确认删除"
+          message={`确定要删除提供商 ${deleteTarget.name} 吗？此操作无法撤销。`}
+          danger
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
       {toast && <div className={`toast ${toast.type}`}>{toast.message}</div>}
     </div>
