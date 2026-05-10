@@ -47,9 +47,12 @@ export default function CommonConfigModal({ config, onSave, onCancel, onExtract 
   };
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay">
       <div className="modal" style={{ width: 640 }} onClick={e => e.stopPropagation()}>
-        <h3>编辑通用配置</h3>
+        <div className="modal-header">
+          <h3>编辑通用配置</h3>
+          <button type="button" className="modal-close" onClick={onCancel}>✕</button>
+        </div>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
           勾选「合并通用配置」时，此处的配置将与当前提供商的配置合并。<br />
           env 字段会与提供商的 env 深度合并（通用配置作为基础，提供商同名 key 优先）。
