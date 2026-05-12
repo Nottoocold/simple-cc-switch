@@ -17,7 +17,7 @@ interface Props {
 const ENV_KEYS = [
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_AUTH_TOKEN',
-  'ANTHROPIC_MODEL',
+  // 'ANTHROPIC_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL',
   'ANTHROPIC_DEFAULT_SONNET_MODEL',
   'ANTHROPIC_DEFAULT_OPUS_MODEL',
@@ -97,7 +97,6 @@ export default function ProviderForm({ provider, onSave, onCancel }: Props) {
               <div key={entry.id} className="env-row">
                 <input
                   value={entry.key}
-                  disabled
                   className="env-key-input"
                 />
                 <input
